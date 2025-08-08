@@ -1,0 +1,73 @@
+# .github/workflows/release.yml
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CARGO_TERM_COLOR: always
+  BINARY_NAME: "ldbucket"
+  PROJECT_SUBDIR: "ldbucket"
+
+jobs:
+  build-release:
+    name: Build Release
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./${{ env.PROJECT_SUBDIR }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_name: ${{ env.BINARY_NAME }}-${{ github.ref_name }}-x86_64-linux.tar.gz
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive_name: ${{ env.BINARY_NAME }}-${{ github.ref_name }}-x86_64-macos.tar.gz
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain-action@stable
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Build binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package binary
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar -czf ${{ matrix.archive_name }} ${{ env.BINARY_NAME }}
+          # Move the archive to the root of the workspace for easy upload
+          mv ${{ matrix.archive_name }} ../../../../
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive_name }}
+          path: ${{ matrix.archive_name }}
+
+  publish:
+    name: Publish Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
