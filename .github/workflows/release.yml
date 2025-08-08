@@ -3,6 +3,9 @@ on:
   push:
     tags:
       - "v*"
+
+permissions:
+  contents: write
 jobs:
   build-release:
     name: Build Release
@@ -46,10 +49,13 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: List downloaded artifacts
+        run: ls -la ./artifacts/
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            *
+          files: ./artifacts/*/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
