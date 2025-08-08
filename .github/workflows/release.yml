@@ -1,5 +1,3 @@
-# .github/workflows/release.yml
-
 name: Release
 
 on:
@@ -7,28 +5,23 @@ on:
     tags:
       - "v*"
 
-env:
-  CARGO_TERM_COLOR: always
-  BINARY_NAME: "ldbucket"
-  PROJECT_SUBDIR: "ldbucket"
-
 jobs:
   build-release:
     name: Build Release
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: ./${{ env.PROJECT_SUBDIR }}
+        working-directory: ./ldbucket
 
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            archive_name: ${{ env.BINARY_NAME }}-${{ github.ref_name }}-x86_64-linux.tar.gz
+            archive_name: ldbucket-${{ github.ref_name }}-x86_64-linux.tar.gz
           - os: macos-latest
             target: x86_64-apple-darwin
-            archive_name: ${{ env.BINARY_NAME }}-${{ github.ref_name }}-x86_64-macos.tar.gz
+            archive_name: ldbucket-${{ github.ref_name }}-x86_64-macos.tar.gz
 
     steps:
       - name: Checkout repository
@@ -46,8 +39,7 @@ jobs:
       - name: Package binary
         run: |
           cd target/${{ matrix.target }}/release
-          tar -czf ${{ matrix.archive_name }} ${{ env.BINARY_NAME }}
-          # Move the archive to the root of the workspace for easy upload
+          tar -czf ${{ matrix.archive_name }} ldbucket
           mv ${{ matrix.archive_name }} ../../../../
 
       - name: Upload artifact
