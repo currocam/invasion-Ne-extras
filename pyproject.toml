@@ -1,0 +1,14 @@
+[project]
+name = "invasion-ne-extras"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "arviz>=0.22.0",
+    "demesdraw>=0.4.0",
+    "jupyterlab>=4.4.5",
+    "msprime>=1.3.4",
+    "numba>=0.61.2",
+    "numpy==2.2",
+    "pymc>=5.25.1",
+    "seaborn>=0.13.2",
+]
